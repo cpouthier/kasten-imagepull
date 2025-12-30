@@ -1,9 +1,9 @@
 # WORK IN PROGRESS
 
 ## Overview
-This Kanister Blueprint collects container images used by pods in a target Namespace, estimates total storage needed, creates a PVC sized to hold all images (with a buffer), and runs a Job to pull each image into the PVC as OCI archives. After the Job completes it cleans up temporary resources; a postExport phase deletes the PVC.
+This blueprint collects container images used by pods in a target Namespace, estimates total storage needed, creates a PVC sized to hold all images (with a buffer), and runs a Job to pull each image into the PVC as OCI archives. After the Job completes it cleans up temporary resources; a postExport phase deletes the PVC.
 
-## What it does
+## Here is a breakdown of its functionality
 - Scans pods in the provided Namespace and writes unique image names to a ConfigMap (`used-images`).
 - Uses `skopeo` + `jq` to inspect image layer sizes and compute a total size (fallback per-image estimate when inspection fails).
 - Creates/updates a PVC (`image-cache`) sized to the computed size in MiB (minimum 1 GiB + 1 GiB buffer).
@@ -13,12 +13,14 @@ This Kanister Blueprint collects container images used by pods in a target Names
 - Waits for Job completion, then deletes the Job and ConfigMap.
 - `postExport` phase deletes the created PVC.
 
-## Requirements / Prerequisites
-- A running Kanister controller in the cluster.
+# How to use this blueprint
+
+## Prerequisites
+- A running Veeam Kasten instance in the cluster.
 - The node(s) must be able to reach image registries used by your pods.
-- The `cpouthier/kasten-toolbox:1.0.0` image (used by the blueprint) must include `skopeo`, `jq`, and standard shell utilities (this blueprint was written against that image).
+- The `cpouthier/kasten-toolbox:1.0.0` image (used by the blueprint) includes `skopeo`, `jq`, and standard shell utilities (this blueprint was written against that image, if you want to create your own image, refer [to this docker file)](https://github.com/cpouthier/backupcopy).
 - A StorageClass that can dynamically provision PVCs (PVC request uses ReadWriteOnce).
-- Sufficient RBAC / permissions for Kanister to create ConfigMaps, PVCs, Jobs and to list/get pods in the target Namespace.
+- Sufficient RBAC / permissions to create ConfigMaps, PVCs, Jobs and to list/get pods in the target Namespace.
 
 ## Important defaults
 - Namespace: the target is the Namespace object passed when invoking the Blueprint.
@@ -28,7 +30,6 @@ This Kanister Blueprint collects container images used by pods in a target Names
 - Minimum PVC size: 1 GiB (plus an extra 1 GiB buffer)
 - Job backoffLimit: 0, wait timeout: 3600s
 
-## How to use
 1. Apply the Blueprint to your cluster:
 ```bash
 kubectl apply -f blueprint.yaml
