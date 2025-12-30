@@ -65,4 +65,12 @@ Apply the ActionSet with `kubectl apply -f actionset.yaml` (or trigger via your 
 - Change image/toolbox, PVC names, buffer size, or the image-sanitization logic by editing `blueprint.yaml`.
 - If you want to persist archives longer, remove the `postExport` PVC deletion or adapt to snapshot/backup the PVC before deletion.
 
+# Restore process - WIP
+
+Restore firstly the backed up PVC containing images
+pop up a local registry
+push images from PVC to local registry
+modify deploiments to point to local registry
+restore whole application
+
 <!-- End -->
