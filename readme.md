@@ -34,7 +34,7 @@ This blueprint collects container images used by pods in a target Namespace, est
 
 In the Veeam Kasten's GUI, click on Blueprints and then "Add a blueprint" or "Create New Blueprint":
 
-![alt text](https://raw.githubusercontent.com/cpouthier/backupcopy/main/img/bpstep1.png)
+![alt text](https://raw.githubusercontent.com/cpouthier/kasten-imagepull/main/img/bpstep1.png)
 
 
 ```
