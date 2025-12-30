@@ -60,22 +60,22 @@ If you configured correctly those action hooks:
 - Veeam Kasten will snapshot both the application PVC(s) if any and the PVC containing all the images and export them if specified.
 - The `postExport` phase will delete the PVC named `image-cache` to leave the namespace clean.
 
-## Notes & caveats
-- If image size inspection fails for an image, the script accounts for it by adding a conservative fallback (512 MiB per failed image).
-- The computed PVC size is rounded up to MiB and increased by a 1 GiB buffer.
-- If your cluster uses volume resizing policies or you prefer a different StorageClass or PVC name, adapt the Blueprint accordingly.
-- Network access and credentials to private registries must be available to `skopeo` (e.g., via node-level credentials or registry auth configured in the pulling image).
-
-## Customization
-- Change image/toolbox, PVC names, buffer size, or the image-sanitization logic by editing `blueprint.yaml`.
-- If you want to persist archives longer, remove the `postExport` PVC deletion or adapt to snapshot/backup the PVC before deletion.
-
-# Restore process - WIP
+ # Restore process - WIP
 
 - Restore firstly the backed up PVC containing images
 - pop up a local registry
 - push images from PVC to local registry
 - modify deploiments to point to local registry
 - restore whole application
+
+# Notes & caveats
+- If image size inspection fails for an image, the script accounts for it by adding a conservative fallback (512 MiB per failed image).
+- The computed PVC size is rounded up to MiB and increased by a 1 GiB buffer.
+- If your cluster uses volume resizing policies or you prefer a different StorageClass or PVC name, adapt the Blueprint accordingly.
+- Network access and credentials to private registries must be available to `skopeo` (e.g., via node-level credentials or registry auth configured in the pulling image).
+
+# Customization
+- Change image/toolbox, PVC names, buffer size, or the image-sanitization logic by editing `blueprint.yaml`.
+- If you want to persist archives longer, remove the `postExport` PVC deletion or adapt to snapshot/backup the PVC before deletion.
 
 <!-- End -->
