@@ -36,8 +36,19 @@ In the Veeam Kasten's GUI, click on Blueprints and then "Add a blueprint" or "Cr
 
 ![alt text](img/bpstep1.png)
 
+In the Add Blueprint screen copy and paste the content of the blueprint. Once you're done, click on "Validate and Save".
 
-```
+![alt text](img/bp2.png)
+
+## Backup policy
+
+You can now create your backup policy as usual, but you will need to refer to this blueprint in the "Pre and Post-Export Action Hooks" section and in the "Pre and Post-Export Action Hooks" as shown below and then save the policy.
+
+![alt text](img/policy.png)
+
+
+
+
 2. Trigger the `backup` action for a specific Namespace using a Kanister ActionSet (or another Kanister invocation mechanism). The Action must reference the Namespace you want to scan. Example (conceptual):
 ```yaml
 # Example ActionSet (conceptual)
