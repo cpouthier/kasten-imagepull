@@ -44,13 +44,13 @@ In the Add Blueprint screen copy and paste the content of the blueprint. Once yo
 
 ![alt text](img/bp2.png)
 
-## Backup policy
+## Backup
 
 You can now create your backup policy as usual, but you will need to refer to this blueprint in the "Pre and Post-Export Action Hooks" section and in the "Pre and Post-Export Action Hooks" as shown below and then save the policy.
 
 ![alt text](img/policy.png)
 
-
+You can now trigger the policy as usual (run once or scheduled).
 
 
 2. Trigger the `backup` action for a specific Namespace using a Kanister ActionSet (or another Kanister invocation mechanism). The Action must reference the Namespace you want to scan. Example (conceptual):
