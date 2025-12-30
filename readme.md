@@ -36,7 +36,7 @@ The provided blueprint **is not supported by the editor and is supplied as-is**.
 - Minimum PVC size: 1 GiB (plus an extra 1 GiB buffer)
 - Job backoffLimit: 0, wait timeout: 3600s
 
-# Create and apply the blueprint in Veeam Kasten's GUI
+## Create and apply the blueprint in Veeam Kasten's GUI
 
 In the Veeam Kasten's GUI, click on Blueprints and then "Add a blueprint" or "Create New Blueprint":
 
@@ -46,7 +46,7 @@ In the Add Blueprint screen copy and paste the content of the blueprint. Once yo
 
 ![alt text](img/bp2.png)
 
-## Backup
+# Backup
 
 You can now create your backup policy as usual, but you will need to refer to this blueprint in the "Pre and Post-Export Action Hooks" section and in the "Pre and Post-Export Action Hooks" as shown below and then save the policy.
 
