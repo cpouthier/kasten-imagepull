@@ -52,26 +52,6 @@ You can now create your backup policy as usual, but you will need to refer to th
 
 You can now trigger the policy as usual (run once or scheduled).
 
-
-2. Trigger the `backup` action for a specific Namespace using a Kanister ActionSet (or another Kanister invocation mechanism). The Action must reference the Namespace you want to scan. Example (conceptual):
-```yaml
-# Example ActionSet (conceptual)
-apiVersion: cr.kanister.io/v1alpha1
-kind: ActionSet
-metadata:
-    name: pull-images-example
-spec:
-    actions:
-        - name: backup
-            blueprint: pull-images-into-pvc-autosize-single-phase
-            object:
-                apiVersion: v1
-                kind: Namespace
-                name: my-app-namespace
-```
-Apply the ActionSet with `kubectl apply -f actionset.yaml` (or trigger via your Kanister workflow system).
-
-## Cleanup
 - The blueprint deletes the temporary Job and ConfigMap after completion.
 - The `postExport` phase will delete the PVC named `image-cache`. If you want to keep the archives, remove or adapt the `postExport` phase before running the action.
 
