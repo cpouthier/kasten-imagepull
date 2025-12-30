@@ -1,6 +1,8 @@
 # WORK IN PROGRESS
 
 ## Overview
+The problem we are addressing is how to back up container images as first-class application components, just like any other application data. Registries are usually protected through separate backup mechanisms, but this approach breaks down if the registry itself is corrupted, unavailable, or needs to be reinstalled. In a major disaster scenario, being able to restore an application together with its original images—without relying on a running registry—makes the recovery process significantly faster, simpler, and more reliable.
+
 This blueprint collects container images used by pods in a target Namespace, estimates total storage needed, creates a PVC sized to hold all images (with a buffer), and runs a Job to pull each image into the PVC as OCI archives. After the Job completes it cleans up temporary resources; a postExport phase deletes the PVC.
 
 **WARNING**
