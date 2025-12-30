@@ -1,0 +1,177 @@
+apiVersion: cr.kanister.io/v1alpha1
+kind: Blueprint
+metadata:
+  name: pull-images-into-pvc-autosize-single-phase
+
+actions:
+  backup:
+    phases:
+      - name: collect-size-and-pull-images
+        func: KubeTask
+        args:
+          image: cpouthier/kasten-toolbox:1.0.0
+          command:
+            - bash
+            - -lc
+            - |
+              set -euo pipefail
+
+              # Application namespace 
+              NS="{{ .Namespace.Name }}"
+              CM_NAME="used-images"
+              PVC_NAME="image-cache"
+              JOB_NAME="pull-images-to-pvc"
+
+              WORKDIR="/tmp/work"
+              IMAGES_FILE="${WORKDIR}/images.list"
+
+              mkdir -p "${WORKDIR}"
+
+              # Collecting container images from pods in namespace: ${NS}
+
+              kubectl -n "${NS}" get pods \
+                -o jsonpath='{range .items[*]}{range .spec.containers[*]}{.image}{"\n"}{end}{end}' \
+                | sort -u > "${IMAGES_FILE}" || true
+
+              if [ ! -s "${IMAGES_FILE}" ]; then
+                echo "[WARN] No images found. Using empty list."
+                : > "${IMAGES_FILE}"
+              fi
+
+              # Creating/updating ConfigMap ${CM_NAME}
+
+              kubectl -n "${NS}" create configmap "${CM_NAME}" \
+                --from-file=images.list="${IMAGES_FILE}" \
+                --dry-run=client -o yaml | kubectl apply -f -
+
+              # Computing PVC size (sum(image sizes) + 1Gi buffer)
+
+              if [ ! -s "${IMAGES_FILE}" ]; then
+                SIZE_MI=1024
+              else
+                TOTAL_BYTES=0
+                FAILED=0
+
+                while IFS= read -r img; do
+                  [[ -z "$img" ]] && continue
+                  [[ "$img" =~ ^# ]] && continue
+
+                  # Inspecting image size: $img
+
+                  if BYTES="$(skopeo inspect --raw "docker://${img}" 2>/dev/null \
+                    | jq -r '.layers[].size' 2>/dev/null \
+                    | awk '{s+=$1} END {print s}')" \
+                    && [[ "$BYTES" =~ ^[0-9]+$ ]] && [ "$BYTES" -gt 0 ]; then
+                    TOTAL_BYTES=$((TOTAL_BYTES + BYTES))
+                  else
+                    FAILED=$((FAILED + 1))
+                    TOTAL_BYTES=$((TOTAL_BYTES + 512 * 1024 * 1024))
+                  fi
+                done < "${IMAGES_FILE}"
+
+                TOTAL_MI=$(( (TOTAL_BYTES + 1048576 - 1) / 1048576 ))
+                SIZE_MI=$(( TOTAL_MI + 1024 ))
+
+                if [ "${SIZE_MI}" -lt 1024 ]; then
+                  SIZE_MI=1024
+                fi
+              fi
+
+              # Creating/updating PVC ${PVC_NAME} with size ${SIZE_MI}Mi
+
+              cat <<EOF | kubectl -n "${NS}" apply -f -
+              apiVersion: v1
+              kind: PersistentVolumeClaim
+              metadata:
+                name: ${PVC_NAME}
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: ${SIZE_MI}Mi
+              EOF
+
+              #Creating Job to pull images into PVC
+
+              kubectl -n "${NS}" delete job "${JOB_NAME}" --ignore-not-found=true
+
+              cat <<EOF | kubectl -n "${NS}" apply -f -
+              apiVersion: batch/v1
+              kind: Job
+              metadata:
+                name: ${JOB_NAME}
+              spec:
+                backoffLimit: 0
+                template:
+                  spec:
+                    restartPolicy: Never
+                    containers:
+                      - name: puller
+                        image: cpouthier/kasten-toolbox:1.0.0
+                        imagePullPolicy: IfNotPresent
+                        command: ["bash","-lc"]
+                        args:
+                          - |
+                            set -euo pipefail
+                            CM_FILE="/config/images.list"
+                            OUT_DIR="/data"
+
+                            test -s "\${CM_FILE}" || { echo "[ERROR] images.list missing"; exit 1; }
+                            mkdir -p "\${OUT_DIR}"
+
+                            sanitize() { echo "\$1" | sed 's/[\/]/_/g; s/:/__/g; s/@/__/g'; }
+
+                            while IFS= read -r img; do
+                              [[ -z "\$img" ]] && continue
+                              [[ "\$img" =~ ^# ]] && continue
+
+                              file="\$(sanitize "\$img").tar"
+                              echo "[INFO] Pulling \$img → \${file}"
+
+                              skopeo copy \
+                                "docker://\${img}" \
+                                "oci-archive:\${OUT_DIR}/\${file}:image"
+                            done < "\${CM_FILE}"
+
+                            echo "[DONE] Files in PVC:"
+                            ls -lh "\${OUT_DIR}"
+                        volumeMounts:
+                          - name: images
+                            mountPath: /config
+                            readOnly: true
+                          - name: pvc
+                            mountPath: /data
+                    volumes:
+                      - name: images
+                        configMap:
+                          name: used-images
+                          items:
+                            - key: images.list
+                              path: images.list
+                      - name: pvc
+                        persistentVolumeClaim:
+                          claimName: image-cache
+              EOF
+
+              # Waiting for Job completion
+              kubectl -n "${NS}" wait --for=condition=complete job/${JOB_NAME} --timeout=3600s
+              
+              # Cleanup 
+              kubectl delete job "${JOB_NAME}" -n $NS --ignore-not-found=true
+              kubectl delete configmap "${CM_NAME}" -n $NS --ignore-not-found=true
+
+  postExport: 
+    phases:
+      - name: cleanup-temporary-pvc
+        func: KubeTask
+        args:
+          image: cpouthier/kasten-toolbox:1.0.0
+          command:
+            - bash
+            - -lc
+            - |
+              set -euo pipefail
+              NS="{{ .Namespace.Name }}"
+              PVC_NAME="image-cache"
+              kubectl delete pvc "${PVC_NAME}" -n $NS --ignore-not-found=true
