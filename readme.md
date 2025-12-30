@@ -1,4 +1,4 @@
-# pull-images-into-pvc-autosize-single-phase
+# WORK IN PROGRESS
 
 ## Overview
 This Kanister Blueprint collects container images used by pods in a target Namespace, estimates total storage needed, creates a PVC sized to hold all images (with a buffer), and runs a Job to pull each image into the PVC as OCI archives. After the Job completes it cleans up temporary resources; a postExport phase deletes the PVC.
