@@ -67,10 +67,10 @@ Apply the ActionSet with `kubectl apply -f actionset.yaml` (or trigger via your 
 
 # Restore process - WIP
 
-Restore firstly the backed up PVC containing images
-pop up a local registry
-push images from PVC to local registry
-modify deploiments to point to local registry
-restore whole application
+- Restore firstly the backed up PVC containing images
+- pop up a local registry
+- push images from PVC to local registry
+- modify deploiments to point to local registry
+- restore whole application
 
 <!-- End -->
