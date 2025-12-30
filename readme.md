@@ -52,8 +52,11 @@ You can now create your backup policy as usual, but you will need to refer to th
 
 You can now trigger the policy as usual (run once or scheduled).
 
-- The blueprint deletes the temporary Job and ConfigMap after completion.
-- The `postExport` phase will delete the PVC named `image-cache`. If you want to keep the archives, remove or adapt the `postExport` phase before running the action.
+If you configured correctly those action hooks:
+- The blueprint will be executed prior to snapshots.
+- The blueprint will delete the temporary Job and ConfigMap after completion.
+- Veeam Kasten will snapshot both the application PVC(s) if any and the PVC containing all the images and export them if specified.
+- The `postExport` phase will delete the PVC named `image-cache` to leave the namespace clean.
 
 ## Notes & caveats
 - If image size inspection fails for an image, the script accounts for it by adding a conservative fallback (512 MiB per failed image).
