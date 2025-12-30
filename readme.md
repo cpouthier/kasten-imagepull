@@ -30,9 +30,13 @@ This blueprint collects container images used by pods in a target Namespace, est
 - Minimum PVC size: 1 GiB (plus an extra 1 GiB buffer)
 - Job backoffLimit: 0, wait timeout: 3600s
 
-1. Apply the Blueprint to your cluster:
-```bash
-kubectl apply -f blueprint.yaml
+# Create and apply the blueprint in Veeam Kasten's GUI
+
+In the Veeam Kasten's GUI, click on Blueprints and then "Add a blueprint" or "Create New Blueprint":
+
+![alt text](https://raw.githubusercontent.com/cpouthier/backupcopy/main/img/bpstep1.png)
+
+
 ```
 2. Trigger the `backup` action for a specific Namespace using a Kanister ActionSet (or another Kanister invocation mechanism). The Action must reference the Namespace you want to scan. Example (conceptual):
 ```yaml
