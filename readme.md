@@ -3,6 +3,10 @@
 ## Overview
 This blueprint collects container images used by pods in a target Namespace, estimates total storage needed, creates a PVC sized to hold all images (with a buffer), and runs a Job to pull each image into the PVC as OCI archives. After the Job completes it cleans up temporary resources; a postExport phase deletes the PVC.
 
+**WARNING**
+
+The provided blueprint **is not supported by the editor and is supplied as-is**. Functionality, compatibility, and correctness are not guaranteed. Please verify and adjust as needed before use.
+
 ## Here is a breakdown of its functionality
 - Scans pods in the provided Namespace and writes unique image names to a ConfigMap (`used-images`).
 - Uses `skopeo` + `jq` to inspect image layer sizes and compute a total size (fallback per-image estimate when inspection fails).
