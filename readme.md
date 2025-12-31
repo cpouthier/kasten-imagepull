@@ -24,7 +24,7 @@ The provided blueprint **is not supported by the editor and is supplied as-is**.
 ## Prerequisites
 - A running Veeam Kasten instance in the cluster.
 - The node(s) must be able to reach image registries used by your pods.
-- The `cpouthier/kasten-toolbox:1.0.0` image (used by the blueprint) includes `skopeo`, `jq`, and standard shell utilities (this blueprint was written against that image, if you want to create your own image, refer [to this docker file](https://github.com/cpouthier/kasten-imagepull/blob/main/image/dockerfile)).
+- The `cpouthier/kasten-toolbox:1.0.0` image (used by the blueprint) includes `skopeo`, `jq`, and standard shell utilities (this blueprint was written against that image, if you want to create your own image, refer [to this docker file](https://github.com/cpouthier/kasten-imagepull/blob/main/image/dockerfile)). This image is built for Linux/AMD64, if you're running on different platform, you may need to create your own.
 - A StorageClass that can dynamically provision PVCs (PVC request uses ReadWriteOnce).
 - Sufficient RBAC / permissions to create ConfigMaps, PVCs, Jobs and to list/get pods in the target Namespace.
 
